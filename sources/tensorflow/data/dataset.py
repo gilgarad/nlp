@@ -23,7 +23,7 @@ class DataSet:
         self.hparams = hparams
         vocabulary_size = 50000
         words = self.samples()
-        data, count, dictionary, reverse_dictionary = PreProcess.build_dataset(words, vocabulary_size)
+        data, count, dictionary, reverse_dictionary = PreProcess.build_dictionary(words, vocabulary_size)
 
         self.data = data
         self.data_index = 0
@@ -33,7 +33,7 @@ class DataSet:
         print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
 
         batch, labels, self.data_index = PreProcess.generate_batch(batch_size=8, num_skips=2, skip_window=1,
-                                                  data=data, data_index=self.data_index)
+                                                                   data=data, data_index=self.data_index)
         for i in range(8):
             print(batch[i], reverse_dictionary[batch[i]],
                   '->', labels[i, 0], reverse_dictionary[labels[i, 0]])

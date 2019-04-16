@@ -196,8 +196,11 @@ class PreProcess:
     # NLP Pre Process
     ##################################################
     @staticmethod
-    def build_dataset(words, vocabulary_size):
+    def build_dictionary(words, vocabulary_size):
         # Step 2: dictionary를 만들고 UNK 토큰을 이용해서 rare words를 교체(replace)한다.
+        # N개 이하 데이터는 Unknown으로 변환 및 카운트 -> 개수가 큰 순서부터 단어:인덱싱
+        # -> 인덱싱:단어 리턴 (reverse_dictionary가 reverse ordered dict역할)
+
         count = [['UNK', -1]]
         count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
         dictionary = dict()

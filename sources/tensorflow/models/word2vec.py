@@ -19,6 +19,7 @@ import tensorflow as tf
 
 from sources.tensorflow.model_base import ModelBase
 from sources.tensorflow.hparams import HParams
+from six.moves import xrange  # pylint: disable=redefined-builtin
 
 
 class Word2Vec(ModelBase):
@@ -33,9 +34,9 @@ class Word2Vec(ModelBase):
 
         # sample에 대한 validation set은 원래 랜덤하게 선택해야한다. 하지만 여기서는 validation samples을
         # 가장 자주 생성되고 낮은 숫자의 ID를 가진 단어로 제한한다.
-        valid_size = hparams.valid_size  # validation 사이즈.
+        self.valid_size = hparams.valid_size  # validation 사이즈.
         valid_window = hparams.valid_window  # 분포의 앞부분(head of the distribution)에서만 validation sample을 선택한다.
-        valid_examples = np.random.choice(valid_window, valid_size, replace=False)
+        valid_examples = np.random.choice(valid_window, self.valid_size, replace=False)
         num_sampled = hparams.num_sampled  # sample에 대한 negative examples의 개수.
 
 
@@ -87,6 +88,20 @@ class Word2Vec(ModelBase):
         self.normalized_embeddings = normalized_embeddings
         self.valid_examples = valid_examples
 
+    def evaluate(self, sess, reverse_dictionary):
+        sim = self.similarity.eval(session=sess)
+
+        for i in xrange(self.valid_size):
+            valid_word = reverse_dictionary[self.valid_examples[i]]
+            top_k = 8  # nearest neighbors의 개수
+            nearest = (-sim[i, :]).argsort()[1:top_k + 1]
+            log_str = "Nearest to %s:" % valid_word
+            for k in xrange(top_k):
+                close_word = reverse_dictionary[nearest[k]]
+                log_str = "%s %s," % (log_str, close_word)
+            print(log_str)
+
+        final_embeddings = self.normalized_embeddings.eval()
 
     @staticmethod
     def get_default_params():
